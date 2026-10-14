@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Study Tracker</title>
+  <meta name="theme-color" content="#14171F">
+  <meta name="description" content="Track JEE and NEET tasks, chapters, and study progress.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F4F5F8;
+      --panel: #FFFFFF;
+      --ink: #14171F;
+      --muted: #6F7686;
+      --line: #E6E8EE;
+      --soft: #EEF0F5;
+      --hi: #E5484D;
+      --mid: #E9A23B;
+      --lo: #9AA1AF;
+      --shadow: 0 1px 2px rgba(20, 23, 31, .05), 0 8px 24px rgba(20, 23, 31, .06);
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    @media (prefers-color-scheme:dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0E1015;
+        --panel: #161920;
+        --ink: #EEF0F5;
+        --muted: #8C93A3;
+        --line: #252934;
+        --soft: #1D212B;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25)
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #0E1015;
+      --panel: #161920;
+      --ink: #EEF0F5;
+      --muted: #8C93A3;
+      --line: #252934;
+      --soft: #1D212B;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25)
+    }
+
+    html {
+      scroll-padding-top: env(safe-area-inset-top, 0px);
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+      line-height: 1.45
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+      touch-action: manipulation
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 292px minmax(0, 1fr);
+      min-height: 100vh;
+      min-height: 100dvh
+    }
+
+    aside {
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      height: 100dvh;
+      overflow-y: auto;
+      align-self: start
+    }
+
+    .brand {
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -.02em;
+      margin: 0 8px 18px
+    }
+
+    .brand small {
+      display: block;
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-height: 60px;
+      padding: 10px 12px;
+      border: 0;
+      border-radius: 16px;
+      background: transparent;
+      text-align: left;
+      transition: background .2s, transform .15s
+    }
+
+    .nav:hover {
+      background: var(--soft)
+    }
+
+    .nav:active {
+      transform: scale(.98)
+    }
+
+    .nav.on {
+      background: var(--panel);
+      box-shadow: var(--shadow)
+    }
+
+    .nav .nm {
+      flex: 1;
+      font-weight: 600
+    }
+
+    .nav .nm small {
+      display: block;
+      font-weight: 500;
+      font-size: 12px;
+      color: var(--muted)
+    }
+
+    .ring {
+      width: 40px;
+      height: 40px;
+      flex: none;
+      transform: rotate(-90deg)
+    }
+
+    .ring circle {
+      fill: none;
+      stroke-width: 4
+    }
+
+    .ring .bg {
+      stroke: var(--line)
+    }
+
+    .ring .fg {
+      stroke: var(--c);
+      stroke-linecap: round;
+      stroke-dasharray: 107;
+      stroke-dashoffset: 107;
+      transition: stroke-dashoffset .8s cubic-bezier(.2, .8, .2, 1)
+    }
+
+    .foot {
+      margin-top: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    .foot .seg {
+      flex: 1 1 100%
+    }
+
+    .foot .theme {
+      flex: 1 1 0;
+      min-width: 0
+    }
+
+    #nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px
+    }
+
+    .seg {
+      display: flex;
+      background: var(--soft);
+      border-radius: 12px;
+      padding: 3px;
+      flex: 1
+    }
+
+    .seg button {
+      flex: 1;
+      border: 0;
+      background: transparent;
+      border-radius: 9px;
+      min-height: 40px;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--muted);
+      transition: background .2s, color .2s
+    }
+
+    .seg button.on {
+      background: var(--panel);
+      color: var(--ink);
+      box-shadow: var(--shadow)
+    }
+
+    .theme {
+      border: 0;
+      background: var(--soft);
+      border-radius: 12px;
+      min-width: 46px;
+      min-height: 46px;
+      padding: 0 10px;
+      font-weight: 600;
+      font-size: 13px
+    }
+
+    main {
+      padding: 32px 32px 96px;
+      max-width: 1240px;
+      width: 100%
+    }
+
+    .top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -.03em
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 2px
+    }
+
+    .new {
+      border: 0;
+      background: var(--ink);
+      color: var(--bg);
+      border-radius: 14px;
+      min-height: 48px;
+      padding: 0 20px;
+      font-weight: 700;
+      transition: transform .15s, opacity .2s;
+      white-space: nowrap
+    }
+
+    .new:active {
+      transform: scale(.96)
+    }
+
+    .bar {
+      height: 6px;
+      background: var(--line);
+      border-radius: 6px;
+      margin: 20px 0 18px;
+      overflow: hidden
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--c);
+      border-radius: 6px;
+      transition: width .8s cubic-bezier(.2, .8, .2, 1), background .3s
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 999px;
+      min-height: 40px;
+      padding: 0 16px;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--muted);
+      transition: all .2s
+    }
+
+    .chip.on {
+      background: var(--c);
+      border-color: var(--c);
+      color: #fff
+    }
+
+    .sp {
+      width: 1px;
+      background: var(--line);
+      margin: 4px 4px
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px
+    }
+
+    .task {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--panel);
+      border-radius: 18px;
+      padding: 12px 16px 12px 12px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition: opacity .3s
+    }
+
+    .task::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 14px;
+      bottom: 14px;
+      width: 4px;
+      border-radius: 0 4px 4px 0;
+      background: var(--p)
+    }
+
+    .task.in {
+      animation: rise .45s cubic-bezier(.2, .8, .2, 1) both;
+      animation-delay: calc(var(--i)*45ms)
+    }
+
+    .task.done {
+      opacity: .55
+    }
+
+    .task.done .t {
+      text-decoration: line-through;
+      text-decoration-color: var(--muted)
+    }
+
+    .check {
+      width: 44px;
+      height: 44px;
+      flex: none;
+      border-radius: 50%;
+      border: 2px solid var(--line);
+      background: transparent;
+      display: grid;
+      place-items: center;
+      transition: background .2s, border-color .2s
+    }
+
+    .check svg {
+      width: 20px;
+      height: 20px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 24;
+      stroke-dashoffset: 24;
+      transition: stroke-dashoffset .3s .05s
+    }
+
+    .task.done .check {
+      background: var(--c);
+      border-color: var(--c)
+    }
+
+    .task.done .check svg {
+      stroke-dashoffset: 0
+    }
+
+    .task.pop .check {
+      animation: pop .4s
+    }
+
+    .body {
+      flex: 1;
+      min-width: 0;
+      cursor: pointer;
+      padding: 4px 0
+    }
+
+    .t {
+      font-weight: 700;
+      font-size: 16px;
+      overflow-wrap: anywhere
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      align-items: center
+    }
+
+    .pill {
+      background: var(--soft);
+      border-radius: 8px;
+      padding: 3px 9px
+    }
+
+    .pill.lv {
+      background: color-mix(in srgb, var(--c) 14%, transparent);
+      color: var(--c)
+    }
+
+    .pill.bl {
+      background: color-mix(in srgb, var(--hi) 14%, transparent);
+      color: var(--hi)
+    }
+
+    .pr {
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      white-space: nowrap
+    }
+
+    .pr::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--p)
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 56px 16px;
+      animation: rise .5s both
+    }
+
+    .empty b {
+      display: block;
+      color: var(--ink);
+      font-size: 18px;
+      margin-bottom: 4px
+    }
+
+    .divider {
+      margin: 18px 4px 4px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted)
+    }
+
+    .scrim {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 12, 18, .45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 5
+    }
+
+    .scrim.on {
+      opacity: 1;
+      pointer-events: auto
+    }
+
+    .sheet {
+      background: var(--panel);
+      width: min(560px, 100%);
+      border-radius: 26px 26px 0 0;
+      padding: 24px 24px calc(24px + env(safe-area-inset-bottom, 0px));
+      transform: translateY(40px);
+      transition: transform .35s cubic-bezier(.2, .8, .2, 1);
+      max-height: 92vh;
+      max-height: 92dvh;
+      overflow: auto
+    }
+
+    .scrim.on .sheet {
+      transform: none
+    }
+
+    @media (min-height:640px) and (min-width:700px) {
+      .scrim {
+        align-items: center
+      }
+
+      .sheet {
+        border-radius: 26px
+      }
+    }
+
+    .sheet h2 {
+      margin: 0 0 16px;
+      font-size: 20px;
+      letter-spacing: -.02em
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      margin: 16px 0 8px
+    }
+
+    input[type=text],
+    textarea {
+      width: 100%;
+      font: inherit;
+      font-size: 16px;
+      padding: 13px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--ink)
+    }
+
+    textarea {
+      resize: none;
+      height: 76px
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 22px
+    }
+
+    .actions button {
+      min-height: 50px;
+      border-radius: 14px;
+      border: 0;
+      font-weight: 700;
+      padding: 0 20px
+    }
+
+    .save {
+      flex: 1;
+      background: var(--c);
+      color: #fff
+    }
+
+    .cancel {
+      background: var(--soft)
+    }
+
+    .del {
+      background: color-mix(in srgb, var(--hi) 14%, transparent);
+      color: var(--hi)
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--c, #3B6CF6);
+      outline-offset: 2px
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+      transform: translate(-50%, 20px);
+      background: var(--ink);
+      color: var(--bg);
+      padding: 12px 20px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all .3s;
+      z-index: 9
+    }
+
+    .toast.on {
+      opacity: 1;
+      transform: translate(-50%, 0)
+    }
+
+    select {
+      width: 100%;
+      font: inherit;
+      font-size: 16px;
+      padding: 13px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--ink)
+    }
+
+    .vseg {
+      flex: none;
+      width: max-content;
+      max-width: 100%;
+      margin-bottom: 16px
+    }
+
+    .vseg button {
+      padding: 0 16px
+    }
+
+    .split {
+      display: grid;
+      gap: 24px;
+      align-items: start
+    }
+
+    .split.both {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr)
+    }
+
+    @media (max-width:899px) {
+      .split.both {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media (min-width:900px) {
+      .split.both .ch {
+        position: sticky;
+        top: 16px;
+        max-height: calc(100vh - 32px);
+        max-height: calc(100dvh - 32px);
+        overflow: auto;
+        padding: 6px 10px 28px;
+        margin: -6px -10px 0
+      }
+    }
+
+    @media (max-width:1200px) {
+      .app {
+        grid-template-columns: 232px minmax(0, 1fr)
+      }
+
+      main {
+        padding: 24px 20px 96px
+      }
+    }
+
+    .panel h3 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      font-weight: 800;
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .chap {
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 10px 14px 14px;
+      box-shadow: var(--shadow);
+      margin-bottom: 10px;
+      border: 2px solid transparent;
+      transition: border-color .2s
+    }
+
+    .chap.on {
+      border-color: var(--c)
+    }
+
+    .chap.in {
+      animation: rise .45s cubic-bezier(.2, .8, .2, 1) both;
+      animation-delay: calc(var(--i)*30ms)
+    }
+
+    .ctop {
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .cn {
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+      border: 0;
+      background: none;
+      padding: 6px 0;
+      font-weight: 700;
+      font-size: 15px;
+      min-height: 40px
+    }
+
+    .cc {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted)
+    }
+
+    .cx {
+      border: 0;
+      background: color-mix(in srgb, var(--hi) 14%, transparent);
+      border-radius: 10px;
+      width: 40px;
+      height: 40px;
+      color: var(--hi)
+    }
+
+    .cbar {
+      height: 4px;
+      background: var(--line);
+      border-radius: 4px;
+      margin: 2px 0 10px;
+      overflow: hidden
+    }
+
+    .cbar i {
+      display: block;
+      height: 100%;
+      background: var(--c);
+      border-radius: 4px;
+      transition: width .6s
+    }
+
+    .lv-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px
+    }
+
+    .lvb {
+      min-height: 40px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: transparent;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      transition: all .2s
+    }
+
+    .lvb.on {
+      background: color-mix(in srgb, var(--c) 14%, transparent);
+      border-color: var(--c);
+      color: var(--c)
+    }
+
+    .lvb.on::before {
+      content: "✓ ";
+      font-weight: 800
+    }
+
+    .cadd {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px
+    }
+
+    .cadd select {
+      width: auto
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(12px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes pop {
+      50% {
+        transform: scale(1.2)
+      }
+    }
+
+    @media (max-width:860px) {
+      .app {
+        grid-template-columns: 1fr
+      }
+
+      aside {
+        position: static;
+        height: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 16px 16px 0;
+        align-items: center
+      }
+
+      .brand {
+        width: 100%;
+        margin: 0 4px 6px
+      }
+
+      .nav {
+        width: auto;
+        min-height: 52px;
+        padding: 6px 12px 6px 8px
+      }
+
+      .nav small {
+        display: none
+      }
+
+      .ring {
+        width: 32px;
+        height: 32px
+      }
+
+      #nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 100%
+      }
+
+      .foot {
+        width: 100%;
+        margin: 6px 0 0
+      }
+
+      .foot .seg {
+        flex: 1 1 auto;
+        min-width: 140px
+      }
+
+      .foot .theme {
+        flex: 0 0 auto;
+        min-height: 40px;
+        padding: 0 14px
+      }
+
+      main {
+        padding: 20px 16px 80px
+      }
+
+      h1 {
+        font-size: 26px
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      * {
+        animation: none !important;
+        transition: none !important
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">Study Tracker<small id="modeName"></small></div>
+      <div id="nav"></div>
+      <div class="foot">
+        <div class="seg" id="modeSeg"><button data-m="jee">JEE</button><button data-m="neet">NEET</button></div>
+        <button class="theme" id="theme" aria-label="Toggle theme"></button>
+        <button class="theme backup-btn" id="backup" type="button" title="Export all tasks and chapter progress">Backup</button>
+        <button class="theme backup-btn" id="restore" type="button" title="Import a Study Tracker JSON backup">Restore</button>
+        <input id="restoreFile" type="file" accept="application/json,.json" hidden>
+      </div>
+    </aside>
+    <main>
+      <div class="top">
+        <div>
+          <h1 id="title"></h1>
+          <div class="sub" id="sub"></div>
+        </div>
+        <button class="new" id="new">+ New task</button>
+      </div>
+      <div class="bar"><i id="barFill"></i></div>
+      <div class="seg vseg" id="layoutSeg"><button data-l="both">Side by side</button><button
+          data-l="chapters">Chapters</button><button data-l="tasks">Tasks</button></div>
+      <div class="chips" id="chips"></div>
+      <div class="split both" id="split">
+        <section class="panel ch" id="chPanel"></section>
+        <section class="panel" id="taskPanel">
+          <div class="list" id="list"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="scrim" id="scrim">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <h2 id="sheetTitle">New task</h2>
+      <label for="f-title">What needs doing?</label>
+      <input type="text" id="f-title" placeholder="e.g. Kinematics Q1 to Q25" maxlength="90" autocomplete="off">
+      <label>Subject</label>
+      <div class="chips" id="f-subj"></div>
+      <label>Level</label>
+      <div class="chips" id="f-level"></div>
+      <label for="f-chap">Chapter (optional)</label><select id="f-chap"></select>
+      <div id="f-branchWrap"><label>Chemistry branch</label>
+        <div class="chips" id="f-branch"></div>
+      </div>
+      <label>Type</label>
+      <div class="chips" id="f-kind"></div>
+      <label for="f-note">Notes (optional)</label>
+      <textarea id="f-note" placeholder="Page numbers, doubts, deadline…"></textarea>
+      <div class="actions"><button class="cancel" id="cancel">Cancel</button><button class="del"
+          id="del">Delete</button><button class="save" id="save">Save task</button></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Level lists run from MOST important (first) to least important (last).
+    const SUBJ = {
+      Physics: { c: "#3B6CF6", lv: ["Foundation Builder", "Ex 1", "JEE Main", "JEE Advanced", "Ex 2"] },
+      Maths: { c: "#8A5CF6", lv: ["Ex 1A", "Ex 1B (Steps)", "JEE Main", "JEE Advanced"] },
+      Chemistry: { c: "#0E9F94", lv: ["Question Bank", "Ex 1", "Mains", "Ex 2"] },
+      Biology: { c: "#3E9B4F", lv: ["NCERT", "Ex 1", "Question Bank", "Ex 2"] }
+    };
+    const MODES = { jee: ["Physics", "Maths", "Chemistry"], neet: ["Physics", "Chemistry", "Biology"] };
+    const FOCUS = "Focus", KEY = "study-tracker-v2";
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const day = 864e5;
+
+    let S = { mode: "jee", theme: null, tasks: [] };
+    try { const r = JSON.parse(localStorage.getItem(KEY) || "null"); if (r) S = { ...S, ...r } } catch (e) { }
+    if (!S.tasks.length && !S.seeded) {
+      const n = Date.now();
+      S.tasks = [
+        { id: "a", title: "Kinematics: Q1 to Q20", note: "", subject: "Physics", level: 0, branch: "", kind: "Homework", done: false, created: n - 2 * day },
+        { id: "b", title: "Quadratic equations worksheet", note: "", subject: "Maths", level: 1, branch: "", kind: "Backlog", done: false, created: n - 9 * day },
+        { id: "c", title: "Aldehydes and ketones", note: "", subject: "Chemistry", level: 0, branch: "Organic", kind: "Homework", done: false, created: n - 1 * day },
+        { id: "d", title: "Periodic trends: Mains set", note: "", subject: "Chemistry", level: 2, branch: "Inorganic", kind: "Backlog", done: false, created: n - 5 * day }
+      ]; S.seeded = true;
+    }
+    // Chapter lists follow the official JEE Main 2026 syllabus units. Chemistry chapters carry a branch (Physical, Inorganic, Organic).
+    const CH = {
+      Physics: "Units and Measurements|Kinematics|Laws of Motion|Work, Energy and Power|Rotational Motion|Gravitation|Properties of Solids and Liquids|Thermodynamics|Kinetic Theory of Gases|Oscillations and Waves|Electrostatics|Current Electricity|Magnetic Effects of Current and Magnetism|EMI and Alternating Currents|Electromagnetic Waves|Optics|Dual Nature of Matter and Radiation|Atoms and Nuclei|Electronic Devices|Experimental Skills",
+      Maths: "Sets, Relations and Functions|Complex Numbers and Quadratic Equations|Matrices and Determinants|Permutations and Combinations|Binomial Theorem|Sequence and Series|Limit, Continuity and Differentiability|Integral Calculus|Differential Equations|Co-ordinate Geometry|Three Dimensional Geometry|Vector Algebra|Statistics and Probability|Trigonometry",
+      Chemistry: "Some Basic Concepts in Chemistry:Physical|Atomic Structure:Physical|Chemical Bonding and Molecular Structure:Physical|Chemical Thermodynamics:Physical|Solutions:Physical|Equilibrium:Physical|Redox Reactions and Electrochemistry:Physical|Chemical Kinetics:Physical|Classification of Elements and Periodicity:Inorganic|p-Block Elements:Inorganic|d- and f-Block Elements:Inorganic|Coordination Compounds:Inorganic|Purification and Characterisation of Organic Compounds:Organic|Some Basic Principles of Organic Chemistry:Organic|Hydrocarbons:Organic|Organic Compounds Containing Halogens:Organic|Organic Compounds Containing Oxygen:Organic|Organic Compounds Containing Nitrogen:Organic|Biomolecules:Organic|Principles Related to Practical Chemistry:Organic",
+      Biology: ""
+    };
+    if (!S.chapters || S.chV !== 2) { S.chapters = {}; for (const k in CH) S.chapters[k] = CH[k] ? CH[k].split("|").map((x, i) => { const [n, b] = x.split(":"); return { id: k[0] + "u" + i, n, b: b || "", d: {} } }) : []; S.chapters.Physics[1].d = { 0: true, 1: true }; S.chV = 2; S.tasks.forEach(t => { t.cid = "" }) }
+    const chaps = s => S.chapters[s] || [];
+    const cProg = (s, c) => Object.keys(c.d).filter(k => c.d[k]).length / SUBJ[s].lv.length;
+    let view = FOCUS, fKind = "All", fBranch = "All", fChap = null, editing = null, pop = null, enter = true, form = {}, editCh = false;
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch (e) { } };
+    const subs = () => MODES[S.mode];
+    const rank = t => { const n = SUBJ[t.subject].lv.length; return n > 1 ? t.level / (n - 1) : 0 };
+    const bySuggest = (a, b) => rank(a) - rank(b) || a.created - b.created;
+    const live = () => S.tasks.filter(t => subs().includes(t.subject));
+
+    function applyTheme() {
+      const t = S.theme || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t); $("theme").textContent = t === "dark" ? "Light" : "Dark";
+    }
+    function toast(m) { const e = $("toast"); e.textContent = m; e.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("on"), 1800) }
+    function colorOf(v) { return v === FOCUS ? "#3B6CF6" : SUBJ[v].c }
+
+    function buildNav() {
+      $("modeName").textContent = S.mode.toUpperCase() + " preparation";
+      document.querySelectorAll("#modeSeg button").forEach(b => b.classList.toggle("on", b.dataset.m === S.mode));
+      const items = [FOCUS, ...subs()];
+      $("nav").innerHTML = items.map(v => `<button class="nav" data-v="${v}" style="--c:${colorOf(v)}">
+    <svg class="ring" viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="17"/><circle class="fg" cx="20" cy="20" r="17"/></svg>
+    <span class="nm">${v == FOCUS ? "Focus" : v}<small></small></span></button>`).join("");
+    }
+    function updateNav() {
+      document.querySelectorAll(".nav").forEach(el => {
+        const v = el.dataset.v, ts = v === FOCUS ? live() : live().filter(t => t.subject === v);
+        const d = ts.filter(t => t.done).length, left = ts.length - d; let p = ts.length ? d / ts.length : 0;
+        if (v !== FOCUS) { const cs = chaps(v); p = cs.length ? cs.reduce((a, c) => a + cProg(v, c), 0) / cs.length : 0 }
+        el.classList.toggle("on", v === view);
+        el.querySelector("small").textContent = v === FOCUS ? `${left} to do` : `${Math.round(p * 100)}% · ${left} to do`;
+        el.querySelector(".fg").style.strokeDashoffset = 107 * (1 - p);
+      });
+    }
+
+    function render() {
+      const col = colorOf(view);
+      document.querySelector("main").style.setProperty("--c", col);
+      const isF = view === FOCUS, chem = view === "Chemistry";
+      if (!chem) fBranch = "All"; if (isF || !chaps(view).some(c => c.id === fChap)) fChap = null;
+      let ts = isF ? live() : live().filter(t => t.subject === view);
+      const all = ts, d = all.filter(t => t.done).length;
+      if (fKind !== "All") ts = ts.filter(t => t.kind === fKind);
+      if (chem && fBranch !== "All") ts = ts.filter(t => t.branch === fBranch);
+      if (fChap) ts = ts.filter(t => t.cid === fChap);
+      let pend = ts.filter(t => !t.done).sort(bySuggest), done = ts.filter(t => t.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
+      let extra = 0;
+      if (isF && fKind === "All") { extra = Math.max(0, pend.length - 8); pend = pend.slice(0, 8); done = [] }
+      const cs0 = isF ? [] : chaps(view), cp0 = cs0.length ? cs0.reduce((a, c) => a + cProg(view, c), 0) / cs0.length : 0;
+      $("title").textContent = isF ? "Focus" : view;
+      $("sub").textContent = isF ? "Your top suggested tasks, most important first" : `${Math.round(cp0 * 100)}% of syllabus covered · ${all.length - d} tasks left`;
+      $("barFill").style.width = ((isF ? (all.length ? d / all.length : 0) : cp0) * 100) + "%";
+      $("barFill").style.background = col;
+      $("chips").innerHTML = ["All", "Homework", "Backlog"].map(k => `<button class="chip ${fKind === k ? "on" : ""}" data-k="${k}">${k}</button>`).join("") +
+        (chem ? `<span class="sp"></span>` + ["All", "Organic", "Inorganic", "Physical"].map(b => `<button class="chip ${fBranch === b ? "on" : ""}" data-b="${b}">${b}</button>`).join("") : "");
+      if (fChap) $("chips").innerHTML += `<button class="chip on" data-xc="1">${esc(chaps(view).find(c => c.id === fChap).n)} ✕</button>`;
+      let i = 0;
+      const row = t => {
+        const s = SUBJ[t.subject], r = rank(t), lab = r <= .34 ? "High" : r <= .67 ? "Medium" : "Low", pc = r <= .34 ? "var(--hi)" : r <= .67 ? "var(--mid)" : "var(--lo)";
+        const age = Math.floor((Date.now() - t.created) / day);
+        return `<div class="task ${t.done ? "done" : ""} ${enter ? "in" : ""} ${pop === t.id ? "pop" : ""}" style="--c:${s.c};--p:${pc};--i:${i++}">
+      <button class="check" data-t="${t.id}" aria-label="Mark done"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button>
+      <div class="body" data-e="${t.id}"><div class="t">${esc(t.title)}</div>
+        <div class="meta">${isF ? `<span class="pill" style="color:${s.c}">${t.subject}</span>` : ""}<span class="pill lv">${esc(s.lv[t.level])}</span>
+        ${t.branch ? `<span class="pill">${t.branch}</span>` : ""}${t.cid && chaps(t.subject).find(c => c.id === t.cid) ? `<span class="pill">${esc(chaps(t.subject).find(c => c.id === t.cid).n)}</span>` : ""}${t.kind === "Backlog" ? `<span class="pill bl">Backlog</span>` : ""}
+        <span>${age < 1 ? "today" : age + "d ago"}</span></div></div>
+      ${t.done ? "" : `<div class="pr">${lab}</div>`}</div>`
+      };
+      let h = pend.map(row).join("");
+      if (extra) h += `<div class="divider">+ ${extra} more in your subjects</div>`;
+      if (done.length) h += `<div class="divider">Completed</div>` + done.map(row).join("");
+      if (!h) h = `<div class="empty"><b>${all.length ? "Nothing matches this filter" : "All clear"}</b>${all.length ? "Try a different filter." : "Add a task to get started."}</div>`;
+      $("list").innerHTML = h; renderCh(isF); enter = false; pop = null; updateNav();
+    }
+
+    // Sheet
+    function chipsHtml(arr, sel, attr) { return arr.map((x, i) => `<button type="button" class="chip ${sel === i ? "on" : ""}" ${attr}="${i}">${esc(x)}</button>`).join("") }
+    function paintForm() {
+      const c = SUBJ[form.subject].c; document.querySelector(".sheet").style.setProperty("--c", c);
+      $("f-subj").innerHTML = chipsHtml(subs(), subs().indexOf(form.subject), "data-s");
+      $("f-level").innerHTML = chipsHtml(SUBJ[form.subject].lv, form.level, "data-l");
+      $("f-chap").innerHTML = `<option value="">None</option>` + chaps(form.subject).map(c => `<option value="${c.id}" ${form.cid === c.id ? "selected" : ""}>${esc(c.n)}</option>`).join("");
+      $("f-branchWrap").style.display = form.subject === "Chemistry" ? "" : "none";
+      $("f-branch").innerHTML = ["Organic", "Inorganic", "Physical"].map(b => `<button type="button" class="chip ${form.branch === b ? "on" : ""}" data-br="${b}">${b}</button>`).join("");
+      $("f-kind").innerHTML = ["Homework", "Backlog"].map(k => `<button type="button" class="chip ${form.kind === k ? "on" : ""}" data-kd="${k}">${k}</button>`).join("");
+    }
+    function openSheet(id) {
+      editing = id; const t = S.tasks.find(x => x.id === id);
+      form = t ? { subject: t.subject, level: t.level, branch: t.branch, kind: t.kind, cid: t.cid || "" } : { subject: view === FOCUS ? subs()[0] : view, level: 0, branch: "", kind: "Homework", cid: fChap || "" };
+      $("sheetTitle").textContent = t ? "Edit task" : "New task";
+      $("f-title").value = t ? t.title : ""; $("f-note").value = t ? t.note : "";
+      $("del").style.display = t ? "" : "none";
+      paintForm(); $("scrim").classList.add("on"); setTimeout(() => $("f-title").focus(), 250);
+    }
+    const closeSheet = () => { $("scrim").classList.remove("on"); editing = null };
+    $("scrim").addEventListener("click", e => {
+      const g = a => e.target.closest("[" + a + "]");
+      if (e.target === $("scrim")) return closeSheet();
+      let b;
+      if (b = g("data-s")) { form.subject = subs()[+b.dataset.s]; form.level = 0; if (form.subject !== "Chemistry") form.branch = ""; form.cid = "" }
+      else if (b = g("data-l")) form.level = +b.dataset.l;
+      else if (b = g("data-br")) form.branch = form.branch === b.dataset.br ? "" : b.dataset.br;
+      else if (b = g("data-kd")) form.kind = b.dataset.kd;
+      else return;
+      paintForm();
+    });
+    $("f-chap").onchange = () => { form.cid = $("f-chap").value };
+    $("cancel").onclick = closeSheet;
+    $("del").onclick = () => { S.tasks = S.tasks.filter(t => t.id !== editing); save(); closeSheet(); render(); toast("Task deleted") };
+    $("save").onclick = () => {
+      const title = $("f-title").value.trim();
+      if (!title) { toast("Add a task title first"); $("f-title").focus(); return }
+      const data = { ...form, title, note: $("f-note").value.trim() };
+      if (editing) Object.assign(S.tasks.find(t => t.id === editing), data);
+      else S.tasks.push({ id: String(Date.now()), done: false, created: Date.now(), ...data });
+      save(); closeSheet(); render(); toast(editing ? "Task updated" : "Task added");
+    };
+    $("new").onclick = () => openSheet(null);
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet() });
+
+    // Main interactions
+    $("nav").addEventListener("click", e => { const b = e.target.closest(".nav"); if (!b) return; view = b.dataset.v; fKind = "All"; fBranch = "All"; enter = true; render() });
+    $("chips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; if (b.dataset.k) fKind = b.dataset.k; if (b.dataset.b) fBranch = b.dataset.b; if (b.dataset.xc) fChap = null; enter = true; render() });
+    $("list").addEventListener("click", e => {
+      const c = e.target.closest("[data-t]"), ed = e.target.closest("[data-e]");
+      if (c) { const t = S.tasks.find(x => x.id === c.dataset.t); t.done = !t.done; t.doneAt = t.done ? Date.now() : 0; pop = t.id; save(); render(); if (t.done) toast("Nice work, task done") }
+      else if (ed) openSheet(ed.dataset.e);
+    });
+    $("modeSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b || b.dataset.m === S.mode) return; S.mode = b.dataset.m; save(); view = FOCUS; enter = true; buildNav(); render(); toast("Switched to " + b.dataset.m.toUpperCase()) });
+    $("theme").onclick = () => { S.theme = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark"; save(); applyTheme() };
+
+    function renderCh(isF) {
+      const L = isF ? "tasks" : (S.layout || "both");
+      $("layoutSeg").style.display = isF ? "none" : "";
+      document.querySelectorAll("#layoutSeg button").forEach(b => b.classList.toggle("on", b.dataset.l === (S.layout || "both")));
+      $("split").className = "split " + (L === "both" ? "both" : "");
+      $("chPanel").style.display = L === "tasks" ? "none" : ""; $("taskPanel").style.display = L === "chapters" ? "none" : "";
+      if (L === "tasks") return;
+      const keep = $("cNew") ? $("cNew").value : "";
+      let cs = chaps(view); if (view === "Chemistry" && fBranch !== "All") cs = cs.filter(c => c.b === fBranch);
+      const lv = SUBJ[view].lv;
+      let h = `<h3>Chapters <button class="chip" data-ce="1">${editCh ? "Done" : "Edit"}</button></h3>`;
+      if (editCh) h += `<div class="cadd"><input type="text" id="cNew" placeholder="New chapter name" maxlength="60">${view === "Chemistry" ? `<select id="cBr"><option>Organic</option><option>Inorganic</option><option>Physical</option></select>` : ""}<button class="chip on" data-ca="1">Add</button></div>`;
+      h += cs.map((c, i) => {
+        const n = lv.filter((_, j) => c.d[j]).length;
+        return `<div class="chap ${fChap === c.id ? "on" : ""} ${enter ? "in" : ""}" style="--i:${i}"><div class="ctop"><button class="cn" data-cf="${c.id}">${esc(c.n)}${c.b ? ` <span class="cc">${c.b}</span>` : ""}</button><span class="cc">${n}/${lv.length}</span>${editCh ? `<button class="cx" data-cd="${c.id}" aria-label="Remove chapter">✕</button>` : ""}</div><div class="cbar"><i style="width:${n / lv.length * 100}%"></i></div><div class="lv-row">${lv.map((l, j) => `<button class="lvb ${c.d[j] ? "on" : ""}" data-cl="${c.id}:${j}">${esc(l)}</button>`).join("")}</div></div>`
+      }).join("");
+      if (!cs.length) h += `<div class="empty"><b>No chapters here</b>Tap Edit to add your chapters.</div>`;
+      $("chPanel").innerHTML = h; if (keep && $("cNew")) $("cNew").value = keep;
+    }
+    $("chPanel").addEventListener("click", e => {
+      const g = a => e.target.closest("[" + a + "]"); let b;
+      if (b = g("data-cl")) { const [id, j] = b.dataset.cl.split(":"), c = chaps(view).find(x => x.id === id); c.d[j] ? delete c.d[j] : c.d[j] = true; save(); render() }
+      else if (b = g("data-cf")) { fChap = fChap === b.dataset.cf ? null : b.dataset.cf; render() }
+      else if (b = g("data-ce")) { editCh = !editCh; render() }
+      else if (b = g("data-cd")) { const id = b.dataset.cd; S.chapters[view] = chaps(view).filter(c => c.id !== id); S.tasks.forEach(t => { if (t.cid === id) t.cid = "" }); if (fChap === id) fChap = null; save(); render() }
+      else if (b = g("data-ca")) { const v = $("cNew").value.trim(); if (!v) { toast("Type a chapter name first"); return } chaps(view).push({ id: view[0] + Date.now(), n: v, b: view === "Chemistry" ? $("cBr").value : "", d: {} }); save(); $("cNew").value = ""; render(); toast("Chapter added") }
+    });
+    $("layoutSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.layout = b.dataset.l; save(); enter = true; render() });
+    // Portable backup: exports/imports all app state without accounts or a server.
+    function exportBackup() {
+      const payload = {
+        app: "Study Tracker",
+        formatVersion: 1,
+        exportedAt: new Date().toISOString(),
+        state: S
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `study-tracker-backup-${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      toast("Backup exported");
+    }
+    function validBackup(data) {
+      const state = data && data.state ? data.state : data;
+      return !!state && typeof state === "object" &&
+        Array.isArray(state.tasks) && state.chapters && typeof state.chapters === "object" &&
+        ["jee", "neet"].includes(state.mode || "jee") &&
+        state.tasks.every(t => t && typeof t === "object" && typeof t.title === "string" && typeof t.subject === "string");
+    }
+    $("backup").addEventListener("click", exportBackup);
+    $("restore").addEventListener("click", () => $("restoreFile").click());
+    $("restoreFile").addEventListener("change", async e => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        if (!validBackup(data)) throw new Error("This file doesn't look like a Study Tracker backup.");
+        if (!confirm("Import this backup? Your current data on this device will be replaced.")) return;
+        const imported = data.state || data;
+        S = { mode: "jee", theme: null, tasks: [], ...imported };
+        save(); applyTheme(); buildNav(); view = FOCUS; fKind = "All"; fBranch = "All"; fChap = null; enter = true; render();
+        toast("Backup restored");
+      } catch (err) {
+        alert(err.message || "Could not read that backup file.");
+      } finally { e.target.value = ""; }
+    });
+
+    // A service worker enables offline app-shell caching on HTTPS or localhost.
+    if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+    }
+
+    applyTheme(); buildNav(); render();
+  </script>
+</body>
+
+</html>
