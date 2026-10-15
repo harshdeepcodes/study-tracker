@@ -5,7 +5,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Study Tracker</title>
-  <meta name="theme-color" content="#14171F">
+  <meta name="theme-color" content="#F4F5F8">
+  <meta name="color-scheme" content="light dark">
   <meta name="description" content="Track JEE and NEET tasks, chapters, and study progress.">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -634,7 +635,8 @@
     }
 
     .vseg button {
-      padding: 0 16px
+      padding: 0 16px;
+      white-space: nowrap
     }
 
     .split {
@@ -780,6 +782,15 @@
       content: "✓ ";
       font-weight: 800
     }
+
+    .nbtn { border: 1px solid var(--line); background: transparent; border-radius: 10px; min-height: 40px; padding: 0 12px; font-size: 12px; font-weight: 700; color: var(--muted) }
+    .nbtn.has { color: var(--c); border-color: var(--c) }
+    .cnotes { margin-top: 10px; display: flex; flex-direction: column; gap: 6px }
+    .cnl { font-size: 12px; color: var(--muted); overflow-wrap: anywhere }
+    .cnl b { color: var(--c); font-weight: 700; margin-right: 4px }
+    .cnf { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--muted); margin: 0 }
+    .cnf span { flex: 0 0 96px }
+    .cnf .cnote { flex: 1; min-width: 0; width: auto; font-size: 14px; padding: 10px 12px }
 
     .cadd {
       display: flex;
@@ -956,15 +967,6 @@
 
     let S = { mode: "jee", theme: null, tasks: [] };
     try { const r = JSON.parse(localStorage.getItem(KEY) || "null"); if (r) S = { ...S, ...r } } catch (e) { }
-    if (!S.tasks.length && !S.seeded) {
-      const n = Date.now();
-      S.tasks = [
-        { id: "a", title: "Kinematics: Q1 to Q20", note: "", subject: "Physics", level: 0, branch: "", kind: "Homework", done: false, created: n - 2 * day },
-        { id: "b", title: "Quadratic equations worksheet", note: "", subject: "Maths", level: 1, branch: "", kind: "Backlog", done: false, created: n - 9 * day },
-        { id: "c", title: "Aldehydes and ketones", note: "", subject: "Chemistry", level: 0, branch: "Organic", kind: "Homework", done: false, created: n - 1 * day },
-        { id: "d", title: "Periodic trends: Mains set", note: "", subject: "Chemistry", level: 2, branch: "Inorganic", kind: "Backlog", done: false, created: n - 5 * day }
-      ]; S.seeded = true;
-    }
     // Chapter lists follow the official JEE Main 2026 syllabus units. Chemistry chapters carry a branch (Physical, Inorganic, Organic).
     const CH = {
       Physics: "Units and Measurements|Kinematics|Laws of Motion|Work, Energy and Power|Rotational Motion|Gravitation|Properties of Solids and Liquids|Thermodynamics|Kinetic Theory of Gases|Oscillations and Waves|Electrostatics|Current Electricity|Magnetic Effects of Current and Magnetism|EMI and Alternating Currents|Electromagnetic Waves|Optics|Dual Nature of Matter and Radiation|Atoms and Nuclei|Electronic Devices|Experimental Skills",
@@ -972,10 +974,10 @@
       Chemistry: "Some Basic Concepts in Chemistry:Physical|Atomic Structure:Physical|Chemical Bonding and Molecular Structure:Physical|Chemical Thermodynamics:Physical|Solutions:Physical|Equilibrium:Physical|Redox Reactions and Electrochemistry:Physical|Chemical Kinetics:Physical|Classification of Elements and Periodicity:Inorganic|p-Block Elements:Inorganic|d- and f-Block Elements:Inorganic|Coordination Compounds:Inorganic|Purification and Characterisation of Organic Compounds:Organic|Some Basic Principles of Organic Chemistry:Organic|Hydrocarbons:Organic|Organic Compounds Containing Halogens:Organic|Organic Compounds Containing Oxygen:Organic|Organic Compounds Containing Nitrogen:Organic|Biomolecules:Organic|Principles Related to Practical Chemistry:Organic",
       Biology: ""
     };
-    if (!S.chapters || S.chV !== 2) { S.chapters = {}; for (const k in CH) S.chapters[k] = CH[k] ? CH[k].split("|").map((x, i) => { const [n, b] = x.split(":"); return { id: k[0] + "u" + i, n, b: b || "", d: {} } }) : []; S.chapters.Physics[1].d = { 0: true, 1: true }; S.chV = 2; S.tasks.forEach(t => { t.cid = "" }) }
+    if (!S.chapters || S.chV !== 2) { S.chapters = {}; for (const k in CH) S.chapters[k] = CH[k] ? CH[k].split("|").map((x, i) => { const [n, b] = x.split(":"); return { id: k[0] + "u" + i, n, b: b || "", d: {} } }) : []; S.chV = 2; S.tasks.forEach(t => { t.cid = "" }) }
     const chaps = s => S.chapters[s] || [];
     const cProg = (s, c) => Object.keys(c.d).filter(k => c.d[k]).length / SUBJ[s].lv.length;
-    let view = FOCUS, fKind = "All", fBranch = "All", fChap = null, editing = null, pop = null, enter = true, form = {}, editCh = false;
+    let view = FOCUS, fKind = "All", fBranch = "All", fChap = null, editing = null, pop = null, enter = true, form = {}, editCh = false, openNotes = new Set();
     const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch (e) { } };
     const subs = () => MODES[S.mode];
     const rank = t => { const n = SUBJ[t.subject].lv.length; return n > 1 ? t.level / (n - 1) : 0 };
@@ -985,6 +987,10 @@
     function applyTheme() {
       const t = S.theme || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");
       document.documentElement.setAttribute("data-theme", t); $("theme").textContent = t === "dark" ? "Light" : "Dark";
+      document.documentElement.style.colorScheme = t;
+      let m = document.querySelector('meta[name="theme-color"]');
+      if (!m) { m = document.createElement("meta"); m.name = "theme-color"; document.head.appendChild(m) }
+      m.setAttribute("content", t === "dark" ? "#0E1015" : "#F4F5F8");
     }
     function toast(m) { const e = $("toast"); e.textContent = m; e.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("on"), 1800) }
     function colorOf(v) { return v === FOCUS ? "#3B6CF6" : SUBJ[v].c }
@@ -1117,8 +1123,10 @@
       let h = `<h3>Chapters <button class="chip" data-ce="1">${editCh ? "Done" : "Edit"}</button></h3>`;
       if (editCh) h += `<div class="cadd"><input type="text" id="cNew" placeholder="New chapter name" maxlength="60">${view === "Chemistry" ? `<select id="cBr"><option>Organic</option><option>Inorganic</option><option>Physical</option></select>` : ""}<button class="chip on" data-ca="1">Add</button></div>`;
       h += cs.map((c, i) => {
-        const n = lv.filter((_, j) => c.d[j]).length;
-        return `<div class="chap ${fChap === c.id ? "on" : ""} ${enter ? "in" : ""}" style="--i:${i}"><div class="ctop"><button class="cn" data-cf="${c.id}">${esc(c.n)}${c.b ? ` <span class="cc">${c.b}</span>` : ""}</button><span class="cc">${n}/${lv.length}</span>${editCh ? `<button class="cx" data-cd="${c.id}" aria-label="Remove chapter">✕</button>` : ""}</div><div class="cbar"><i style="width:${n / lv.length * 100}%"></i></div><div class="lv-row">${lv.map((l, j) => `<button class="lvb ${c.d[j] ? "on" : ""}" data-cl="${c.id}:${j}">${esc(l)}</button>`).join("")}</div></div>`
+        const n = lv.filter((_, j) => c.d[j]).length, notes = c.c || {}, open = openNotes.has(c.id);
+        const saved = lv.map((l, j) => notes[j] ? `<div class="cnl"><b>${esc(l)}</b> ${esc(notes[j])}</div>` : "").join("");
+        const fields = lv.map((l, j) => `<label class="cnf"><span>${esc(l)}</span><input type="text" class="cnote" data-cn="${c.id}:${j}" value="${esc(notes[j] || "")}" placeholder="Page no., book, anything…" maxlength="120"></label>`).join("");
+        return `<div class="chap ${fChap === c.id ? "on" : ""} ${enter ? "in" : ""}" style="--i:${i}"><div class="ctop"><button class="cn" data-cf="${c.id}">${esc(c.n)}${c.b ? ` <span class="cc">${c.b}</span>` : ""}</button><span class="cc">${n}/${lv.length}</span><button class="nbtn ${open || saved ? "has" : ""}" data-cnt="${c.id}">${open ? "Close" : saved ? "Notes ●" : "Notes"}</button>${editCh ? `<button class="cx" data-cd="${c.id}" aria-label="Remove chapter">✕</button>` : ""}</div><div class="cbar"><i style="width:${n / lv.length * 100}%"></i></div><div class="lv-row">${lv.map((l, j) => `<button class="lvb ${c.d[j] ? "on" : ""}" data-cl="${c.id}:${j}">${esc(l)}</button>`).join("")}</div>${open ? `<div class="cnotes">${fields}</div>` : saved ? `<div class="cnotes">${saved}</div>` : ""}</div>`
       }).join("");
       if (!cs.length) h += `<div class="empty"><b>No chapters here</b>Tap Edit to add your chapters.</div>`;
       $("chPanel").innerHTML = h; if (keep && $("cNew")) $("cNew").value = keep;
@@ -1126,12 +1134,19 @@
     $("chPanel").addEventListener("click", e => {
       const g = a => e.target.closest("[" + a + "]"); let b;
       if (b = g("data-cl")) { const [id, j] = b.dataset.cl.split(":"), c = chaps(view).find(x => x.id === id); c.d[j] ? delete c.d[j] : c.d[j] = true; save(); render() }
+      else if (b = g("data-cnt")) { const id = b.dataset.cnt; openNotes.has(id) ? openNotes.delete(id) : openNotes.add(id); render() }
       else if (b = g("data-cf")) { fChap = fChap === b.dataset.cf ? null : b.dataset.cf; render() }
       else if (b = g("data-ce")) { editCh = !editCh; render() }
       else if (b = g("data-cd")) { const id = b.dataset.cd; S.chapters[view] = chaps(view).filter(c => c.id !== id); S.tasks.forEach(t => { if (t.cid === id) t.cid = "" }); if (fChap === id) fChap = null; save(); render() }
       else if (b = g("data-ca")) { const v = $("cNew").value.trim(); if (!v) { toast("Type a chapter name first"); return } chaps(view).push({ id: view[0] + Date.now(), n: v, b: view === "Chemistry" ? $("cBr").value : "", d: {} }); save(); $("cNew").value = ""; render(); toast("Chapter added") }
     });
     $("layoutSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.layout = b.dataset.l; save(); enter = true; render() });
+    $("chPanel").addEventListener("input", e => {
+      const el = e.target.closest("[data-cn]"); if (!el) return;
+      const [id, j] = el.dataset.cn.split(":"), c = chaps(view).find(x => x.id === id);
+      if (!c) return;
+      c.c = c.c || {}; const v = el.value.trim(); v ? c.c[j] = v : delete c.c[j]; save();
+    });
     // Portable backup: exports/imports all app state without accounts or a server.
     function exportBackup() {
       const payload = {
@@ -1165,7 +1180,7 @@
         if (!validBackup(data)) throw new Error("This file doesn't look like a Study Tracker backup.");
         if (!confirm("Import this backup? Your current data on this device will be replaced.")) return;
         const imported = data.state || data;
-        S = { mode: "jee", theme: null, tasks: [], ...imported };
+        S = { mode: "jee", theme: null, tasks: [], ...imported }; S.chV = 2;
         save(); applyTheme(); buildNav(); view = FOCUS; fKind = "All"; fBranch = "All"; fChap = null; enter = true; render();
         toast("Backup restored");
       } catch (err) {
@@ -1175,9 +1190,12 @@
 
     // A service worker enables offline app-shell caching on HTTPS or localhost.
     if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+      const hadSW = !!navigator.serviceWorker.controller; let reloading = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => { if (!hadSW || reloading) return; reloading = true; location.reload() });
       window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
     }
 
+    matchMedia("(prefers-color-scheme:dark)").addEventListener("change", () => { if (!S.theme) applyTheme() });
     applyTheme(); buildNav(); render();
   </script>
 </body>
