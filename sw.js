@@ -1,4 +1,4 @@
-const CACHE = "study-tracker-v3"; // change v3 to v4, v5... whenever you update index.html
+const CACHE = "study-tracker-v4"; // change v3 to v4, v5... whenever you update index.html
 const SHELL = ["./", "./index.html", "./manifest.json", "./icons/icon.svg",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png"];
 
